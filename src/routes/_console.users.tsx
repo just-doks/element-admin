@@ -330,7 +330,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
         return;
       }
 
-      // setOpen(open);
+      setOpen(open);
       if (!open) {
         setLocalpart("");
         setErrors([]);
