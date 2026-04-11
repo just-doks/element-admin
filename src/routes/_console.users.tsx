@@ -209,7 +209,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
 
-  const { mutate, isPending, isError, error } = useMutation({
+  const { mutate, isPending, isError, error, reset } = useMutation({
     mutationFn: (username: string) =>
       createUser(queryClient, serverName, username),
     onError: () => {
@@ -270,8 +270,9 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
 
       setOpen(open);
       setLocalpart("");
+      if (!open) reset();
     },
-    [isPending],
+    [isPending, reset],
   );
 
   const onLocalpartInput = useCallback(
