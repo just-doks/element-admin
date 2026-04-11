@@ -212,13 +212,37 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const [localpart, setLocalpart] = useState("");
   const [errors, setErrors] = useState<MASError[]>([]);
 
+  const rules = [
+    {
+      pattern: /[^a-z0-9.=_/-]+/,
+      message:
+        "Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes",
+    },
+    { pattern: /^[0-9]+$/, message: "Localpart cannot only contain numbers" },
+    { pattern: /^$/, message: "This field is required" },
+  ];
+
+  // localpart validation
+  const isLocalpartValid = useCallback(
+    (value: string) => {
+      for (const { pattern, message } of rules) {
+        if (pattern.test(value)) {
+          setErrors([{ title: message }]);
+          return false;
+        }
+      }
+      return true;
+    },
+    [setErrors],
+  );
+
   const normalizeError = useCallback((error: ErrorResponse | Error | null) => {
     if (isErrorResponse(error)) return error.errors;
     if (error === null) return [];
     return [{ title: error?.message ?? "Unknown error" }];
   }, []);
 
-  const { mutate, isPending, isError, reset } = useMutation({
+  const { mutate, isPending, reset } = useMutation({
     mutationFn: (username: string) =>
       createUser(queryClient, serverName, username),
     onError: (error) => {
@@ -272,25 +296,24 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       }
 
       setOpen(open);
-      setLocalpart("");
-      if (!open && isError) {
+      if (!open) {
+        setLocalpart("");
         setErrors([]);
         reset();
       }
     },
-    [isPending, isError, reset],
+    [isPending, reset],
   );
 
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
-      //if (errors.length > 0) {
-      if (isError) {
+      if (errors.length > 0) {
         setErrors([]); // clear errors on typing
         reset();
       }
     },
-    [setLocalpart, isError, reset],
+    [setLocalpart, errors, reset],
   );
 
   const onSubmit = useCallback(
@@ -302,7 +325,9 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
 
       const data = new FormData(event.currentTarget);
       const localpart = data.get("new-user-localpart") as string;
-      mutate(localpart);
+
+      // localpart validation on submit
+      if (isLocalpartValid(localpart)) mutate(localpart);
     },
     [mutate, isPending],
   );
@@ -335,7 +360,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       </Dialog.Description>
 
       <Form.Root onSubmit={onSubmit}>
-        <Form.Field name="new-user-localpart" serverInvalid={isError}>
+        <Form.Field name="new-user-localpart" serverInvalid={errors.length > 0}>
           <Form.Label>
             <FormattedMessage
               id="pages.users.new_user.localpart"
@@ -353,7 +378,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          <Form.ErrorMessage match="patternMismatch">
+          {/* <Form.ErrorMessage match="patternMismatch">
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
               defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
@@ -373,7 +398,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
               defaultMessage="Localpart cannot only contain numbers"
               description="The error message shown when the localpart input only has numbers, which are reserved for guests"
             />
-          </Form.ErrorMessage>
+          </Form.ErrorMessage> */}
 
           {errors.map((error, index) => (
             <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
