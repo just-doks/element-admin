@@ -218,10 +218,10 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
     return [{ title: error?.message ?? "Unknown error" }];
   }, []);
 
-  const { mutate, isPending, isError, error, reset } = useMutation({
+  const { mutate, isPending, isError, reset } = useMutation({
     mutationFn: (username: string) =>
       createUser(queryClient, serverName, username),
-    onError: () => {
+    onError: (error) => {
       toast.error(
         intl.formatMessage({
           id: "pages.users.new_user.error_message",
