@@ -290,9 +290,10 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       setLocalpart(event.currentTarget.value);
       if (errors.length > 0) {
         setErrors([]); // clear errors on typing
+        reset();
       }
     },
-    [setLocalpart, errors],
+    [setLocalpart, errors, reset],
   );
 
   const onSubmit = useCallback(
