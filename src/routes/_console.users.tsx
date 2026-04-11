@@ -59,6 +59,8 @@ import { useImageBlob } from "@/utils/blob";
 import { computeHumanReadableDateTimeStringFromUtc } from "@/utils/datetime";
 import { useFilters } from "@/utils/filters";
 import { useCurrentChildRoutePath } from "@/utils/routes";
+import type { ErrorResponse } from "@/api/mas/api";
+import type { Error as MASError } from "@/api/mas/api";
 
 const UserSearchParameters = v.object({
   admin: v.optional(v.boolean()),
@@ -208,6 +210,13 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const intl = useIntl();
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
+  const [errors, setErrors] = useState<MASError[]>([]);
+
+  const normalizeError = useCallback((error: ErrorResponse | Error | null) => {
+    if (isErrorResponse(error)) return error.errors;
+    if (error === null) return [];
+    return [{ title: error?.message ?? "Unknown error" }];
+  }, []);
 
   const { mutate, isPending, isError, error, reset } = useMutation({
     mutationFn: (username: string) =>
@@ -221,6 +230,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
             "The error message shown in a toast when a user fails to be created",
         }),
       );
+      setErrors(normalizeError(error));
     },
     onSuccess: async (response) => {
       // Set the user query data so that we avoid one round trip
@@ -255,11 +265,11 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   });
 
   // TODO: have a generic way to normalize those errors
-  const errors = isErrorResponse(error)
-    ? error.errors
-    : error === null
-      ? []
-      : [{ title: error.message }];
+  // const errors = isErrorResponse(error)
+  //   ? error.errors
+  //   : error === null
+  //     ? []
+  //     : [{ title: error.message }];
 
   const onOpenChange = useCallback(
     (open: boolean) => {
@@ -278,8 +288,11 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
+      if (errors.length > 0) {
+        setErrors([]); // clear errors on typing
+      }
     },
-    [setLocalpart],
+    [setLocalpart, errors],
   );
 
   const onSubmit = useCallback(
