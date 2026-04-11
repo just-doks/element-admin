@@ -31,12 +31,7 @@ import {
 } from "@vector-im/compound-web";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import {
-  defineMessage,
-  FormattedMessage,
-  useIntl,
-  type MessageDescriptor,
-} from "react-intl";
+import { defineMessage, FormattedMessage, useIntl } from "react-intl";
 import * as v from "valibot";
 
 import {
@@ -226,54 +221,55 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
   const [errors, setErrors] = useState<MASError[]>([]);
-  const [validationError, setValidationError] =
-    useState<MessageDescriptor | null>(null);
 
-  const rules = [
-    {
-      pattern: /[^a-z0-9.=_/-]+/,
-      id: "pages.users.new_user.invalid_localpart",
-      defaultMessage:
-        "Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes",
-      description:
-        "The error message shown when the localpart contains invalid characters",
-    },
-    {
-      pattern: /^[0-9]+$/,
-      id: "pages.users.new_user.invalid_localpart_numeric_only",
-      defaultMessage: "Localpart cannot only contain numbers",
-      description:
-        "The error message shown when the localpart input only has numbers, which are reserved for guests",
-    },
-    {
-      pattern: /^$/,
-      id: "pages.users.new_user.required_error",
-      defaultMessage: "This field is required",
-      description: "The error message shown when the localpart input is empty",
-    },
-    {
-      pattern: /^_/,
-      id: "pages.users.new_user.invalid_localpart_start_underscore",
-      defaultMessage: "Localpart cannot start with underscore",
-      description:
-        "The error message shown when the localpart starts with underscore",
-    },
-  ];
+  // const [validationError, setValidationError] =
+  //   useState<MessageDescriptor | null>(null);
+
+  // const rules = [
+  //   {
+  //     pattern: /[^a-z0-9.=_/-]+/,
+  //     id: "pages.users.new_user.invalid_localpart",
+  //     defaultMessage:
+  //       "Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes",
+  //     description:
+  //       "The error message shown when the localpart contains invalid characters",
+  //   },
+  //   {
+  //     pattern: /^[0-9]+$/,
+  //     id: "pages.users.new_user.invalid_localpart_numeric_only",
+  //     defaultMessage: "Localpart cannot only contain numbers",
+  //     description:
+  //       "The error message shown when the localpart input only has numbers, which are reserved for guests",
+  //   },
+  //   {
+  //     pattern: /^$/,
+  //     id: "pages.users.new_user.required_error",
+  //     defaultMessage: "This field is required",
+  //     description: "The error message shown when the localpart input is empty",
+  //   },
+  //   {
+  //     pattern: /^_/,
+  //     id: "pages.users.new_user.invalid_localpart_start_underscore",
+  //     defaultMessage: "Localpart cannot start with underscore",
+  //     description:
+  //       "The error message shown when the localpart starts with underscore",
+  //   },
+  // ];
 
   // localpart validation
-  const isLocalpartValid = useCallback(
-    (value: string) => {
-      for (const { pattern, ...props } of rules) {
-        if (pattern.test(value)) {
-          // setErrors([defineMessage(props as MessageDescriptor)]);
-          setValidationError(defineMessage(props as MessageDescriptor));
-          return false;
-        }
-      }
-      return true;
-    },
-    [setValidationError],
-  );
+  // const isLocalpartValid = useCallback(
+  //   (value: string) => {
+  //     for (const { pattern, ...props } of rules) {
+  //       if (pattern.test(value)) {
+  //         // setErrors([defineMessage(props as MessageDescriptor)]);
+  //         setValidationError(defineMessage(props as MessageDescriptor));
+  //         return false;
+  //       }
+  //     }
+  //     return true;
+  //   },
+  //   [setValidationError],
+  // );
 
   const normalizeError = useCallback((error: ErrorResponse | Error | null) => {
     if (isErrorResponse(error)) return error.errors;
@@ -347,13 +343,13 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
-      if (errors.length > 0 || !!validationError) {
+      if (errors.length > 0) {
         setErrors([]); // clear errors on typing
-        setValidationError(null);
+        // setValidationError(null);
         reset();
       }
     },
-    [setLocalpart, errors, validationError, reset],
+    [setLocalpart, errors, reset],
   );
 
   const onSubmit = useCallback(
@@ -367,9 +363,10 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       const localpart = data.get("new-user-localpart") as string;
 
       // localpart validation on submit
-      if (isLocalpartValid(localpart)) mutate(localpart);
+      // if (isLocalpartValid(localpart))
+      mutate(localpart);
     },
-    [mutate, isPending, isLocalpartValid],
+    [mutate, isPending],
   );
 
   return (
@@ -418,12 +415,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          {!!validationError && (
-            <Form.ErrorMessage>
-              <FormattedMessage {...validationError} />
-            </Form.ErrorMessage>
-          )}
-          {/* <Form.ErrorMessage match="patternMismatch">
+          <Form.ErrorMessage match="patternMismatch">
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
               defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
@@ -443,8 +435,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
               defaultMessage="Localpart cannot only contain numbers"
               description="The error message shown when the localpart input only has numbers, which are reserved for guests"
             />
-          </Form.ErrorMessage> */}
-
+          </Form.ErrorMessage>
           {errors.map((error, index) => (
             <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
           ))}
