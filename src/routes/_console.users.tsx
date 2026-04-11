@@ -415,14 +415,14 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          <Form.ErrorMessage match="patternMismatch">
+          <Form.ErrorMessage match={(value) => /[^a-z0-9.=_/-]+/.test(value)}>
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
               defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
               description="The error message shown when the localpart contains invalid characters"
             />
           </Form.ErrorMessage>
-          <Form.ErrorMessage match="valueMissing">
+          <Form.ErrorMessage match={(value) => /^$/.test(value)}>
             <FormattedMessage
               id="pages.users.new_user.required_error"
               defaultMessage="This field is required"
