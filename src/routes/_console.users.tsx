@@ -284,12 +284,13 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
-      if (errors.length > 0) {
+      //if (errors.length > 0) {
+      if (isError) {
         setErrors([]); // clear errors on typing
         reset();
       }
     },
-    [setLocalpart, errors, reset],
+    [setLocalpart, isError, reset],
   );
 
   const onSubmit = useCallback(
