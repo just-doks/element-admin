@@ -264,13 +264,6 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
     },
   });
 
-  // TODO: have a generic way to normalize those errors
-  // const errors = isErrorResponse(error)
-  //   ? error.errors
-  //   : error === null
-  //     ? []
-  //     : [{ title: error.message }];
-
   const onOpenChange = useCallback(
     (open: boolean) => {
       // Prevent from closing if the mutation is pending
@@ -280,12 +273,12 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
 
       setOpen(open);
       setLocalpart("");
-      if (!open) {
+      if (!open && isError) {
         setErrors([]);
         reset();
       }
     },
-    [isPending, reset],
+    [isPending, isError, reset],
   );
 
   const onLocalpartInput = useCallback(
