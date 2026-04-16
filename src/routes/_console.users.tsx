@@ -427,7 +427,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
               description="The error message shown when the localpart contains invalid characters"
             />
           </Form.ErrorMessage>
-          <Form.ErrorMessage match={(v) => /^$/.test(v)}>
+          <Form.ErrorMessage match="valueMissing">
             <FormattedMessage
               id="pages.users.new_user.required_error"
               defaultMessage="This field is required"
