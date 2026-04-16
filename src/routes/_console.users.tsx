@@ -59,7 +59,7 @@ import { useImageBlob } from "@/utils/blob";
 import { computeHumanReadableDateTimeStringFromUtc } from "@/utils/datetime";
 import { useFilters } from "@/utils/filters";
 import { useCurrentChildRoutePath } from "@/utils/routes";
-import type { ErrorResponse, Error as MASError } from "@/api/mas/api";
+import type { ErrorResponse, Error as ErrorMAS } from "@/api/mas/api";
 
 const UserSearchParameters = v.object({
   admin: v.optional(v.boolean()),
@@ -198,16 +198,6 @@ const UserCell = ({ userId, mxid, synapseRoot }: UserCellProps) => {
   );
 };
 
-// type FormattedMessageProps = {
-//   id?: unknown;
-//   defaultMessage: string;
-//   description?: string;
-// }
-
-// type ValidationRule = {
-//   pattern: RegExp
-// } & ValidationError;
-
 interface UserAddButtonProps {
   serverName: string;
 }
@@ -219,57 +209,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const intl = useIntl();
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
-  const [errors, setErrors] = useState<MASError[]>([]);
-  // const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // const [validationError, setValidationError] =
-  //   useState<MessageDescriptor | null>(null);
-
-  // const rules = [
-  //   {
-  //     pattern: /[^a-z0-9.=_/-]+/,
-  //     id: "pages.users.new_user.invalid_localpart",
-  //     defaultMessage:
-  //       "Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes",
-  //     description:
-  //       "The error message shown when the localpart contains invalid characters",
-  //   },
-  //   {
-  //     pattern: /^[0-9]+$/,
-  //     id: "pages.users.new_user.invalid_localpart_numeric_only",
-  //     defaultMessage: "Localpart cannot only contain numbers",
-  //     description:
-  //       "The error message shown when the localpart input only has numbers, which are reserved for guests",
-  //   },
-  //   {
-  //     pattern: /^$/,
-  //     id: "pages.users.new_user.required_error",
-  //     defaultMessage: "This field is required",
-  //     description: "The error message shown when the localpart input is empty",
-  //   },
-  //   {
-  //     pattern: /^_/,
-  //     id: "pages.users.new_user.invalid_localpart_start_underscore",
-  //     defaultMessage: "Localpart cannot start with underscore",
-  //     description:
-  //       "The error message shown when the localpart starts with underscore",
-  //   },
-  // ];
-
-  // localpart validation
-  // const isLocalpartValid = useCallback(
-  //   (value: string) => {
-  //     for (const { pattern, ...props } of rules) {
-  //       if (pattern.test(value)) {
-  //         // setErrors([defineMessage(props as MessageDescriptor)]);
-  //         setValidationError(defineMessage(props as MessageDescriptor));
-  //         return false;
-  //       }
-  //     }
-  //     return true;
-  //   },
-  //   [setValidationError],
-  // );
+  const [errors, setErrors] = useState<ErrorMAS[]>([]);
 
   const normalizeError = useCallback((error: ErrorResponse | Error | null) => {
     if (isErrorResponse(error)) return error.errors;
@@ -319,7 +259,6 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
         search: (previous) => previous,
       });
       setOpen(false);
-      // setLocalpart("");
     },
   });
 
@@ -331,10 +270,10 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       }
 
       setOpen(open);
+      // clear state on dialog close
       if (!open) {
         setLocalpart("");
         setErrors([]);
-        // setIsSubmitted(false);
         reset();
       }
     },
@@ -344,17 +283,14 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
+      // clear error state on typing
       if (isError) {
-        setErrors([]); // clear errors on typing
-        // setValidationError(null);
-        // setIsSubmitted(false);
+        setErrors([]);
         reset();
       }
     },
     [isError, reset],
   );
-
-  // const onSubmitClick = useCallback(() => setIsSubmitted(true), []);
 
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -366,9 +302,6 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       const data = new FormData(event.currentTarget);
       const localpart = data.get("new-user-localpart") as string;
 
-      // localpart validation on submit
-      // if (isLocalpartValid(localpart))
-      // setIsSubmitted(true);
       mutate(localpart);
     },
     [isPending, mutate],
@@ -420,7 +353,6 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          {/* <Form.ErrorMessage match={(v) => /[^a-z0-9.=_/-]+/.test(v)}> */}
           <Form.ErrorMessage match="patternMismatch">
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
