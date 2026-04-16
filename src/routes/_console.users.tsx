@@ -59,8 +59,7 @@ import { useImageBlob } from "@/utils/blob";
 import { computeHumanReadableDateTimeStringFromUtc } from "@/utils/datetime";
 import { useFilters } from "@/utils/filters";
 import { useCurrentChildRoutePath } from "@/utils/routes";
-import type { ErrorResponse } from "@/api/mas/api";
-import type { Error as MASError } from "@/api/mas/api";
+import type { ErrorResponse, Error as MASError } from "@/api/mas/api";
 
 const UserSearchParameters = v.object({
   admin: v.optional(v.boolean()),
@@ -221,6 +220,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
   const [errors, setErrors] = useState<MASError[]>([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   // const [validationError, setValidationError] =
   //   useState<MessageDescriptor | null>(null);
@@ -277,7 +277,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
     return [{ title: error?.message ?? "Unknown error" }];
   }, []);
 
-  const { mutate, isPending, reset } = useMutation({
+  const { mutate, isPending, isError, reset } = useMutation({
     mutationFn: (username: string) =>
       createUser(queryClient, serverName, username),
     onError: (error) => {
@@ -334,6 +334,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       if (!open) {
         setLocalpart("");
         setErrors([]);
+        setIsSubmitted(false);
         reset();
       }
     },
@@ -343,13 +344,14 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
-      if (errors.length > 0) {
+      if (isSubmitted) {
         setErrors([]); // clear errors on typing
         // setValidationError(null);
+        setIsSubmitted(false);
         reset();
       }
     },
-    [setLocalpart, errors, reset],
+    [isSubmitted, reset],
   );
 
   const onSubmit = useCallback(
@@ -364,9 +366,10 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
 
       // localpart validation on submit
       // if (isLocalpartValid(localpart))
+      setIsSubmitted(true);
       mutate(localpart);
     },
-    [mutate, isPending],
+    [isPending, mutate],
   );
 
   return (
@@ -397,7 +400,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       </Dialog.Description>
 
       <Form.Root onSubmit={onSubmit}>
-        <Form.Field name="new-user-localpart" serverInvalid={errors.length > 0}>
+        <Form.Field name="new-user-localpart" serverInvalid={isError}>
           <Form.Label>
             <FormattedMessage
               id="pages.users.new_user.localpart"
@@ -407,38 +410,43 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           </Form.Label>
           <Form.TextControl
             onInput={onLocalpartInput}
-            // required
-            // pattern="[a-z0-9.=_/-]+"
+            required
+            pattern="[a-z0-9.=_/-]+"
             autoCapitalize="off"
             autoComplete="off"
           />
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          <Form.ErrorMessage match={(value) => /[^a-z0-9.=_/-]+/.test(value)}>
-            <FormattedMessage
-              id="pages.users.new_user.invalid_localpart"
-              defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
-              description="The error message shown when the localpart contains invalid characters"
-            />
-          </Form.ErrorMessage>
-          <Form.ErrorMessage match={(value) => /^$/.test(value)}>
-            <FormattedMessage
-              id="pages.users.new_user.required_error"
-              defaultMessage="This field is required"
-              description="The error message shown when the localpart input is empty"
-            />
-          </Form.ErrorMessage>
-          <Form.ErrorMessage match={(value) => /^[0-9]+$/.test(value)}>
-            <FormattedMessage
-              id="pages.users.new_user.invalid_localpart_numeric_only"
-              defaultMessage="Localpart cannot only contain numbers"
-              description="The error message shown when the localpart input only has numbers, which are reserved for guests"
-            />
-          </Form.ErrorMessage>
-          {errors.map((error, index) => (
-            <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
-          ))}
+          {/* <Form.ErrorMessage match={(value) => /[^a-z0-9.=_/-]+/.test(value)}> */}
+          {isSubmitted && (
+              <>
+                <Form.ErrorMessage match="patternMismatch">
+                  <FormattedMessage
+                    id="pages.users.new_user.invalid_localpart"
+                    defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
+                    description="The error message shown when the localpart contains invalid characters"
+                  />
+                </Form.ErrorMessage>
+                <Form.ErrorMessage match="valueMissing">
+                  <FormattedMessage
+                    id="pages.users.new_user.required_error"
+                    defaultMessage="This field is required"
+                    description="The error message shown when the localpart input is empty"
+                  />
+                </Form.ErrorMessage>
+                <Form.ErrorMessage match={(value) => /^[0-9]+$/.test(value)}>
+                  <FormattedMessage
+                    id="pages.users.new_user.invalid_localpart_numeric_only"
+                    defaultMessage="Localpart cannot only contain numbers"
+                    description="The error message shown when the localpart input only has numbers, which are reserved for guests"
+                  />
+                </Form.ErrorMessage>
+              </>
+            ) &&
+            errors.map((error, index) => (
+              <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
+            ))}
         </Form.Field>
 
         <Form.Submit disabled={isPending}>
