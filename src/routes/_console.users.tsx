@@ -220,7 +220,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [localpart, setLocalpart] = useState("");
   const [errors, setErrors] = useState<MASError[]>([]);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  // const [isSubmitted, setIsSubmitted] = useState(false);
 
   // const [validationError, setValidationError] =
   //   useState<MessageDescriptor | null>(null);
@@ -334,7 +334,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       if (!open) {
         setLocalpart("");
         setErrors([]);
-        setIsSubmitted(false);
+        // setIsSubmitted(false);
         reset();
       }
     },
@@ -344,22 +344,22 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onLocalpartInput = useCallback(
     (event: React.InputEvent<HTMLInputElement>) => {
       setLocalpart(event.currentTarget.value);
-      if (isSubmitted) {
+      if (isError) {
         setErrors([]); // clear errors on typing
         // setValidationError(null);
-        setIsSubmitted(false);
+        // setIsSubmitted(false);
         reset();
       }
     },
-    [isSubmitted, reset],
+    [isError, reset],
   );
 
-  const onSubmitClick = useCallback(() => setIsSubmitted(true), []);
+  // const onSubmitClick = useCallback(() => setIsSubmitted(true), []);
 
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (isPending && !isSubmitted) {
+      if (isPending) {
         return;
       }
 
@@ -371,7 +371,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       // setIsSubmitted(true);
       mutate(localpart);
     },
-    [isPending, isSubmitted, mutate],
+    [isPending, mutate],
   );
 
   return (
@@ -412,7 +412,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           </Form.Label>
           <Form.TextControl
             onInput={onLocalpartInput}
-            // required
+            required
             // pattern="[a-z0-9.=_/-]+"
             autoCapitalize="off"
             autoComplete="off"
@@ -420,39 +420,33 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          {/* <Form.ErrorMessage match={(value) => /[^a-z0-9.=_/-]+/.test(value)}> */}
-          <Form.ErrorMessage
-            match={(v) => isSubmitted && /[^a-z0-9.=_/-]+/.test(v)}
-          >
+          <Form.ErrorMessage match={(v) => /[^a-z0-9.=_/-]+/.test(v)}>
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
               defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
               description="The error message shown when the localpart contains invalid characters"
             />
           </Form.ErrorMessage>
-          <Form.ErrorMessage match={(v) => isSubmitted && /^$/.test(v)}>
+          <Form.ErrorMessage match={(v) => /^$/.test(v)}>
             <FormattedMessage
               id="pages.users.new_user.required_error"
               defaultMessage="This field is required"
               description="The error message shown when the localpart input is empty"
             />
           </Form.ErrorMessage>
-          <Form.ErrorMessage
-            match={(value) => isSubmitted && /^[0-9]+$/.test(value)}
-          >
+          <Form.ErrorMessage match={(value) => /^[0-9]+$/.test(value)}>
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart_numeric_only"
               defaultMessage="Localpart cannot only contain numbers"
               description="The error message shown when the localpart input only has numbers, which are reserved for guests"
             />
           </Form.ErrorMessage>
-          {isSubmitted &&
-            errors.map((error, index) => (
-              <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
-            ))}
+          {errors.map((error, index) => (
+            <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
+          ))}
         </Form.Field>
 
-        <Form.Submit disabled={isPending} onClick={onSubmitClick}>
+        <Form.Submit disabled={isPending}>
           {isPending && <InlineSpinner />}
           <FormattedMessage
             id="pages.users.new_user.create_account"
