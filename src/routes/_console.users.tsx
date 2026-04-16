@@ -413,7 +413,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.TextControl
             onInput={onLocalpartInput}
             required
-            pattern="[a-z0-9.=_\/-]+"
+            pattern="[a-z0-9.=_\\/-]+"
             autoCapitalize="off"
             autoComplete="off"
           />
