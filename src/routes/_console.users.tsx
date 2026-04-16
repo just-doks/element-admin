@@ -421,31 +421,32 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
           {/* <Form.ErrorMessage match={(value) => /[^a-z0-9.=_/-]+/.test(value)}> */}
-          {isSubmitted && (
-              <>
-                <Form.ErrorMessage match="patternMismatch">
-                  <FormattedMessage
-                    id="pages.users.new_user.invalid_localpart"
-                    defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
-                    description="The error message shown when the localpart contains invalid characters"
-                  />
-                </Form.ErrorMessage>
-                <Form.ErrorMessage match="valueMissing">
-                  <FormattedMessage
-                    id="pages.users.new_user.required_error"
-                    defaultMessage="This field is required"
-                    description="The error message shown when the localpart input is empty"
-                  />
-                </Form.ErrorMessage>
-                <Form.ErrorMessage match={(value) => /^[0-9]+$/.test(value)}>
-                  <FormattedMessage
-                    id="pages.users.new_user.invalid_localpart_numeric_only"
-                    defaultMessage="Localpart cannot only contain numbers"
-                    description="The error message shown when the localpart input only has numbers, which are reserved for guests"
-                  />
-                </Form.ErrorMessage>
-              </>
-            ) &&
+          <Form.ErrorMessage
+            match={(v) => isSubmitted && /[^a-z0-9.=_/-]+/.test(v)}
+          >
+            <FormattedMessage
+              id="pages.users.new_user.invalid_localpart"
+              defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
+              description="The error message shown when the localpart contains invalid characters"
+            />
+          </Form.ErrorMessage>
+          <Form.ErrorMessage match={(v) => isSubmitted && /^$/.test(v)}>
+            <FormattedMessage
+              id="pages.users.new_user.required_error"
+              defaultMessage="This field is required"
+              description="The error message shown when the localpart input is empty"
+            />
+          </Form.ErrorMessage>
+          <Form.ErrorMessage
+            match={(value) => isSubmitted && /^[0-9]+$/.test(value)}
+          >
+            <FormattedMessage
+              id="pages.users.new_user.invalid_localpart_numeric_only"
+              defaultMessage="Localpart cannot only contain numbers"
+              description="The error message shown when the localpart input only has numbers, which are reserved for guests"
+            />
+          </Form.ErrorMessage>
+          {isSubmitted &&
             errors.map((error, index) => (
               <Form.ErrorMessage key={index}>{error.title}</Form.ErrorMessage>
             ))}
