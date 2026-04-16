@@ -413,14 +413,16 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
           <Form.TextControl
             onInput={onLocalpartInput}
             required
-            // pattern="[a-z0-9.=_/-]+"
+            pattern="[a-z0-9.=_/-]+"
+            type="text"
             autoCapitalize="off"
             autoComplete="off"
           />
           <Form.HelpMessage>
             @{localpart || "---"}:{serverName}
           </Form.HelpMessage>
-          <Form.ErrorMessage match={(v) => /[^a-z0-9.=_/-]+/.test(v)}>
+          {/* <Form.ErrorMessage match={(v) => /[^a-z0-9.=_/-]+/.test(v)}> */}
+          <Form.ErrorMessage match="patternMismatch">
             <FormattedMessage
               id="pages.users.new_user.invalid_localpart"
               defaultMessage="Localpart can only contain lowercase letters, numbers, dots, underscores, dashes and slashes"
