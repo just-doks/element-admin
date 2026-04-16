@@ -354,6 +354,8 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
     [isSubmitted, reset],
   );
 
+  const onSubmitClick = useCallback(() => setIsSubmitted(true), []);
+
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
@@ -366,7 +368,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
 
       // localpart validation on submit
       // if (isLocalpartValid(localpart))
-      setIsSubmitted(true);
+      // setIsSubmitted(true);
       mutate(localpart);
     },
     [isPending, mutate],
@@ -449,7 +451,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
             ))}
         </Form.Field>
 
-        <Form.Submit disabled={isPending}>
+        <Form.Submit disabled={isPending} onClick={onSubmitClick}>
           {isPending && <InlineSpinner />}
           <FormattedMessage
             id="pages.users.new_user.create_account"
