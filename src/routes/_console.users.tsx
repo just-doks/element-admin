@@ -359,7 +359,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
   const onSubmit = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      if (isPending) {
+      if (isPending && !isSubmitted) {
         return;
       }
 
@@ -371,7 +371,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
       // setIsSubmitted(true);
       mutate(localpart);
     },
-    [isPending, mutate],
+    [isPending, isSubmitted, mutate],
   );
 
   return (
