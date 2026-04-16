@@ -269,6 +269,8 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
         return;
       }
 
+      console.log(serverName);
+
       setOpen(open);
       // clear state on dialog close
       if (!open) {
@@ -277,7 +279,7 @@ const UserAddButton: React.FC<UserAddButtonProps> = ({
         reset();
       }
     },
-    [isPending, reset],
+    [isPending, serverName, reset],
   );
 
   const onLocalpartInput = useCallback(
